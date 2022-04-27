@@ -10,14 +10,14 @@
 		"Other"
 	],
 	"activationEvents": [
-        "onCommand:justAntlr.helloWorld"
+        "onCommand:justAntlr.build"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
 		"commands": [
 			{
-				"command": "justAntlr.helloWorld",
-				"title": "Hello World"
+				"command": "justAntlr.build",
+				"title": "Antlr: build"
 			}
 		]
 	},

@@ -1,4 +1,5 @@
-import { ExtensionContext, window } from "vscode";
+import { ExtensionContext, QuickPick, QuickPickItem, window } from "vscode";
+import { buildWithConfig } from "./input/buildWtihConfig";
 import { defaultBuild } from "./input/defaultBuild";
 
 // build target language
@@ -23,8 +24,9 @@ export interface BuildInfo {
 export async function buildInput(context: ExtensionContext) {
   let inputResult: BuildInfo;
 
-  const options: { [key: string]: (ctx?: ExtensionContext) => Promise<BuildInfo> } = {
-    defaultBuild
+  const options: { [key: string]: (ctx?: ExtensionContext, quickPick?: QuickPick<QuickPickItem>) => Promise<BuildInfo> } = {
+    defaultBuild,
+    buildWithConfig
   };
 
   const quickPick = window.createQuickPick();
@@ -34,7 +36,8 @@ export async function buildInput(context: ExtensionContext) {
   quickPick.onDidChangeSelection(async (selection) => {
     if (selection[0]) {
       try {
-        inputResult = await options[selection[0].label](context);
+        inputResult = await options[selection[0].label](context, quickPick);
+        console.log('build input: ', inputResult);
       } catch(e) {
         console.log('Build Input Error');
         console.error(e);
