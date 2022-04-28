@@ -1,5 +1,8 @@
-import { posix } from 'path';
+import * as pathModule from 'path';
 import * as vscode from 'vscode';
+import { type } from 'os';
+
+const path = type().toLowerCase().includes('windows') ? pathModule.win32 : pathModule.posix;
 
 /**
  * assert the extname of active editor
@@ -9,7 +12,7 @@ import * as vscode from 'vscode';
 export function assertActiveEditorExtName(extName: string) {
   if (
     !vscode.window.activeTextEditor
-    || posix.extname(vscode.window.activeTextEditor.document.uri.path) !== extName
+    || path.extname(vscode.window.activeTextEditor.document.uri.path) !== extName
   ) {
     return false;
   }
@@ -22,7 +25,7 @@ function joinFilePath(basePath: string, paths?: string[]) {
     return basePath;
   }
 
-  return posix.join(basePath, ...paths);
+  return path.join(basePath, ...paths);
 }
 
 export function joinWorkSpacePath(...path: string[]) {
@@ -42,7 +45,18 @@ export function getActiveEditorDir() {
     return "";
   }
 
-  const activePath = vscode.window.activeTextEditor.document.uri.path;
+  const activePath = vscode.window.activeTextEditor.document.uri.fsPath;
+  const dirPath = path.dirname(activePath);
+  return dirPath;
+}
 
-  return posix.dirname(activePath);
+export function getActiveEditorPath() {
+  if(!vscode.window.activeTextEditor) {
+    vscode.window.showErrorMessage("No active editor");
+    return "";
+  }
+
+  const activePath = vscode.window.activeTextEditor.document.uri.fsPath;
+
+  return activePath;
 }

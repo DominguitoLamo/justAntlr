@@ -1,3 +1,4 @@
+import { rejects } from "assert";
 import { ExtensionContext, QuickPick, QuickPickItem, window } from "vscode";
 import { buildWithConfig } from "./input/buildWtihConfig";
 import { defaultBuild } from "./input/defaultBuild";
@@ -21,6 +22,10 @@ export interface BuildInfo {
   projectName: string
 }
 
+/**
+ * get build information from input
+ * @param context 
+ */
 export async function buildInput(context: ExtensionContext) {
   let inputResult: BuildInfo;
 
@@ -29,22 +34,24 @@ export async function buildInput(context: ExtensionContext) {
     buildWithConfig
   };
 
-  const quickPick = window.createQuickPick();
-  quickPick.items = Object.keys(options).map(label => ({ label }));
-
-  // selected event
-  quickPick.onDidChangeSelection(async (selection) => {
-    if (selection[0]) {
-      try {
-        inputResult = await options[selection[0].label](context, quickPick);
-        console.log('build input: ', inputResult);
-      } catch(e) {
-        console.log('Build Input Error');
-        console.error(e);
-      } 
-    }
+  return new Promise<BuildInfo>((resolve, rejects) => {
+    const quickPick = window.createQuickPick();
+    quickPick.items = Object.keys(options).map(label => ({ label }));
+  
+    // selected event
+    quickPick.onDidChangeSelection(async (selection) => {
+      if (selection[0]) {
+        try {
+          inputResult = await options[selection[0].label](context, quickPick);
+          resolve(inputResult);
+        } catch(e) {
+          console.log('Build Input Error');
+          rejects(e);
+        } 
+      }
+    });
+  
+    quickPick.onDidHide(() => quickPick.dispose());
+    quickPick.show();
   });
-
-  quickPick.onDidHide(() => quickPick.dispose());
-  quickPick.show();
 }
