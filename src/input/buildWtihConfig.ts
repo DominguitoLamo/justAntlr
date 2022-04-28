@@ -1,4 +1,3 @@
-import { ExtensionContext } from "vscode";
 import { BuildInfo, TargetLang } from "../buildInput";
 import { MultiStepInput, runMultiInput } from "./MultiInput";
 
@@ -20,9 +19,18 @@ export async function buildWithConfig() {
 }
 
 async function getTargetName(input: MultiStepInput<BuildInfo>, result: BuildInfo) {
-  const targetLangNames = Object.keys(TargetLang)
-    .map(item => {
-      return { label: item.toLowerCase() };
+  const targetLangNames = [
+    TargetLang.JAVA,
+    TargetLang.GO,
+    TargetLang.JAVASCRIPT,
+    TargetLang.PHP,
+    TargetLang.PYTHON3,
+    TargetLang.PYTHON2,
+    TargetLang.CPP,
+    TargetLang.DART,
+    TargetLang.SWIFT
+  ].map(item => {
+      return { label: item };
     });
 
   const targetName = await input.showQuickPick({

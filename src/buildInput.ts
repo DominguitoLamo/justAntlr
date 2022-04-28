@@ -4,7 +4,7 @@ import { defaultBuild } from "./input/defaultBuild";
 
 // build target language
 export enum TargetLang {
-  JAVA = 'java',
+  JAVA = 'Java',
   GO = 'Go',
   JAVASCRIPT = 'Javascript',
   PHP = 'PHP',

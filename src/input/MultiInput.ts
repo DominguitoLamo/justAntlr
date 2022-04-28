@@ -99,6 +99,7 @@ export class MultiStepInput<T> {
 		const disposables: Disposable[] = [];
 		try {
 			return await new Promise<T | (P extends { buttons: (infer I)[] } ? I : never)>((resolve, reject) => {
+				// open select window
 				const input = window.createQuickPick<T>();
 				input.title = title;
 				input.step = step;
@@ -147,6 +148,7 @@ export class MultiStepInput<T> {
 		const disposables: Disposable[] = [];
 		try {
 			return await new Promise<string | (P extends { buttons: (infer I)[] } ? I : never)>((resolve, reject) => {
+				// open inputbox window
 				const input = window.createInputBox();
 				input.title = title;
 				input.step = step;
