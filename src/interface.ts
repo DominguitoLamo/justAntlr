@@ -10,3 +10,9 @@ export interface ParserInfo {
   rule: string,
   parseType: 'tokens' | 'gui' | 'tree'
 }
+
+export interface InteractInfo {
+  g4File: string,
+  rule: string,
+  text: string
+}

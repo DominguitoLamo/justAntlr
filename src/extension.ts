@@ -2,7 +2,7 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 import { build } from './build';
-import { parse } from './parser';
+import { interact, parse } from './parser';
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -18,7 +18,11 @@ export function activate(context: vscode.ExtensionContext) {
 		parse(context);
 	});
 
-	context.subscriptions.push(buildDisposable, parseDisposible);
+	const interactDisposible = vscode.commands.registerTextEditorCommand('justAntlr.inputInteractive', () => {
+		interact(context);
+	});
+
+	context.subscriptions.push(buildDisposable, parseDisposible, interactDisposible);
 }
 
 // this method is called when your extension is deactivated

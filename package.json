@@ -11,18 +11,23 @@
   ],
   "activationEvents": [
     "onCommand:justAntlr.build",
-    "onCommand:justAntlr.genAST"
+    "onCommand:justAntlr.genAST",
+    "onCommand:justAntlr.inputInteractive"
   ],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
       {
         "command": "justAntlr.build",
-        "title": "Antlr: build"
+        "title": "justAntlr.build"
       },
       {
         "command": "justAntlr.genAST",
         "title": "justAntlr: generate AST gui"
+      },
+      {
+        "command": "justAntlr.inputInteractive",
+        "title": "justAntlr: interactive input"
       }
     ]
   },

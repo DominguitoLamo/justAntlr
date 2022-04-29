@@ -1,5 +1,5 @@
 import { getSelectText } from "../util/editor";
-import { ParserInfo, TerminalInfo } from '../interface';
+import { InteractInfo, ParserInfo, TerminalInfo } from '../interface';
 import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
@@ -8,6 +8,7 @@ import { getActiveEditorDir, getActiveEditorPath } from "../util/fs";
 import { BuildInfo, TargetLang } from "../buildInput";
 import { generateAntlrProject, compileBuilt, getAntlrJarPath } from "../build";
 import { launchTerminal } from "../util/terminal";
+import { openInteractWebView } from "../webview";
 
 export async function parse(context: vscode.ExtensionContext) {
   const parseConfig: ParserInfo = {
@@ -22,8 +23,22 @@ export async function parse(context: vscode.ExtensionContext) {
     return;
   }
   await buildAndCompile(parseConfig, context)
+    // Error appears in the case of inaccurate grammar though the project generated is able to be compiled.
     .finally(async() => {
       await showGuiTree(parseConfig, context);
+    });
+}
+
+export async function interact(context: vscode.ExtensionContext) {
+  const interactConfig: InteractInfo = {
+    g4File: getActiveEditorPath(),
+    rule: getSelectText() || "",
+    text: ''
+  };
+
+  await buildAndCompile(interactConfig, context)
+    .finally(async() => {
+      openInteractWebView(context.extensionUri, context);
     });
 }
 
@@ -47,7 +62,7 @@ async function getFileParsed() {
  * @param parseConfig 
  * @param context 
  */
-async function buildAndCompile(parseConfig: ParserInfo, context: vscode.ExtensionContext) {
+async function buildAndCompile(parseConfig: ParserInfo | InteractInfo, context: vscode.ExtensionContext) {
   const grammarName = getGrammarName(parseConfig.g4File);
   if (isCompile(grammarName)) {
     return;
@@ -114,4 +129,6 @@ function getTreeCommand(parseConfig: ParserInfo, context: vscode.ExtensionContex
 
   return result;
 }
+
+
 
