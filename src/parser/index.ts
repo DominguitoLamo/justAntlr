@@ -1,13 +1,13 @@
 import { getSelectText } from "../util/editor";
-import { ParserInfo } from '../interface';
+import { ParserInfo, TerminalInfo } from '../interface';
 import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
 import { ensureDirSync } from 'fs-extra';
 import { getActiveEditorDir, getActiveEditorPath } from "../util/fs";
-import { InputStep, MultiStepInput, runMultiInput } from "../input/MultiInput";
 import { BuildInfo, TargetLang } from "../buildInput";
-import { generateAntlrProject, compileBuilt } from "../build";
+import { generateAntlrProject, compileBuilt, getAntlrJarPath } from "../build";
+import { launchTerminal } from "../util/terminal";
 
 export async function parse(context: vscode.ExtensionContext) {
   const parseConfig: ParserInfo = {
@@ -21,26 +21,25 @@ export async function parse(context: vscode.ExtensionContext) {
   if (!parseConfig.fileParsed) {
     return;
   }
-  await buildAndCompile(parseConfig, context);
+  await buildAndCompile(parseConfig, context)
+    .finally(async() => {
+      await showGuiTree(parseConfig, context);
+    });
 }
 
 async function getFileParsed() {
-  const inputFilePath: InputStep<any> =async (input: MultiStepInput<any>, result: any) => {
-    const inputValue = await input.showInputBox({
-      title: 'Input the relative path of the file parsed in the workspace.',
-      step: 1,
-      totalSteps: 1,
-      prompt: 'Input the path, e.g foo/bar',
-    });
-
-    result.value = inputValue;
+  const options: vscode.OpenDialogOptions = {
+    canSelectMany: false,
+    openLabel: 'Open',
+    defaultUri: vscode.workspace.workspaceFolders ? vscode.workspace.workspaceFolders[0].uri : undefined
   };
-  const result = {
-    value: ''
-  };
-  await runMultiInput([inputFilePath], result);
 
-  return result.value;
+  const file = await vscode.window.showOpenDialog(options);
+  if (file && file.length > 0) {
+    return file[0].fsPath;
+  } else {
+    return "";
+  }
 }
 
 /**
@@ -49,11 +48,11 @@ async function getFileParsed() {
  * @param context 
  */
 async function buildAndCompile(parseConfig: ParserInfo, context: vscode.ExtensionContext) {
-  const grammarName =  getGrammarName(parseConfig.g4File);
+  const grammarName = getGrammarName(parseConfig.g4File);
   if (isCompile(grammarName)) {
     return;
   }
-  buildForparsing(grammarName, context)
+  await buildForparsing(grammarName, context)
     .finally(async () => {
       const compilePath = path.join(getGenDir(), grammarName);
       await compileBuilt(compilePath, context);
@@ -98,5 +97,21 @@ async function buildForparsing(grammarName: string, context: vscode.ExtensionCon
  */
 function getGenDir() {
   return path.join(getActiveEditorDir(), '.gen');
+}
+
+async function showGuiTree(parseConfig: ParserInfo, context: vscode.ExtensionContext) {
+  const { command, args, cwd } = getTreeCommand(parseConfig, context);
+  await launchTerminal(command, args, cwd);
+}
+
+function getTreeCommand(parseConfig: ParserInfo, context: vscode.ExtensionContext) {
+  const grammarName = getGrammarName(parseConfig.g4File);
+  const result: TerminalInfo = {
+    command: 'java',
+    args: ['-cp', `.;${getAntlrJarPath(context)}`, 'org.antlr.v4.gui.TestRig', grammarName, parseConfig.rule, '-gui', parseConfig.fileParsed],
+    cwd: path.join(getGenDir(), grammarName)
+  };
+
+  return result;
 }
 

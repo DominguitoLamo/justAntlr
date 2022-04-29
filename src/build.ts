@@ -45,7 +45,7 @@ function getGenerateCommand(buildInfo: BuildInfo, ctx: ExtensionContext) {
  * get antlr jar path
  * @param ctx 
  */
-function getAntlrJarPath(ctx: ExtensionContext) {
+export function getAntlrJarPath(ctx: ExtensionContext) {
   const jarPath = posix.join(ctx.extensionPath, 'lib', 'antlr-4.10.1-complete.jar');
   return jarPath;
 }
