@@ -1,4 +1,4 @@
-import { posix } from "path";
+import { join, posix } from "path";
 import { existsSync } from 'fs';
 import { ExtensionContext } from "vscode";
 import { BuildInfo, buildInput, TargetLang } from "./buildInput";
@@ -62,10 +62,11 @@ export async function compileBuilt(compilePath: string, context: ExtensionContex
   await launchTerminal(terminalInfo.command, terminalInfo.args);
 }
 
-function getCompileCommand(compilePath: string, context: ExtensionContext) {
+function getCompileCommand(compilePath: string, context: ExtensionContext, isAllCompile: boolean = true) {
+  let compiled: string = isAllCompile ? join(compilePath, '*.java') : compilePath;
   const result: TerminalInfo = {
     command: 'javac',
-    args: ['-cp', `.;${getAntlrJarPath(context)}`, compilePath]
+    args: ['-cp', `.;${getAntlrJarPath(context)}`, compiled]
   };
 
   return result;

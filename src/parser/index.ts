@@ -16,11 +16,16 @@ export async function parse(context: vscode.ExtensionContext) {
     parseType: 'gui',
     fileParsed: await getFileParsed()
   };
+
+  // Empty file parsed
+  if (!parseConfig.fileParsed) {
+    return;
+  }
   await buildAndCompile(parseConfig, context);
 }
 
 async function getFileParsed() {
-  const inputFilePath: InputStep<string> =async (input: MultiStepInput<string>, result: string) => {
+  const inputFilePath: InputStep<any> =async (input: MultiStepInput<any>, result: any) => {
     const inputValue = await input.showInputBox({
       title: 'Input the relative path of the file parsed in the workspace.',
       step: 1,
@@ -28,12 +33,14 @@ async function getFileParsed() {
       prompt: 'Input the path, e.g foo/bar',
     });
 
-    return inputValue;
+    result.value = inputValue;
   };
+  const result = {
+    value: ''
+  };
+  await runMultiInput([inputFilePath], result);
 
-  const result = await runMultiInput([inputFilePath], "");
-
-  return result;
+  return result.value;
 }
 
 /**
@@ -46,9 +53,11 @@ async function buildAndCompile(parseConfig: ParserInfo, context: vscode.Extensio
   if (isCompile(grammarName)) {
     return;
   }
-  await buildForparsing(grammarName, context);
-  const compilePath = path.join(getGenDir(), grammarName);
-  await compileBuilt(compilePath, context);
+  buildForparsing(grammarName, context)
+    .finally(async () => {
+      const compilePath = path.join(getGenDir(), grammarName);
+      await compileBuilt(compilePath, context);
+    });
 }
 
 function getGrammarName(filePath: string) {
