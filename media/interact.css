@@ -1,0 +1,27 @@
+.input-content {
+  padding: 20px;
+}
+
+.button-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 20px;
+}
+
+.content {
+  display: flex;
+}
+
+.left {
+  flex: 1;
+  margin-right: 18px;
+}
+
+.left .interact-input {
+  width: 100%;
+  min-height: 500px;
+}
+
+.right {
+  flex: 1;
+}

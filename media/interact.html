@@ -4,9 +4,45 @@
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Bootstrap CSS -->
+    <link href="./bootstrap.min.css" rel="stylesheet">
+    <link href="./interact.css" rel="stylesheet">
   <title>Interact with Grammar</title>
 </head>
 <body>
-  <div>Hello world</div>
+  <div class="input-content" id="app">
+    <div class="button-row">
+      <button type="button" class="btn btn-primary">Run</button>
+    </div>
+    <div class="content">
+      <div class="left form-floating">
+        <textarea class="form-control interact-input" placeholder="Input parsed text" id="floatingTextarea2"></textarea>
+        <label for="floatingTextarea2">Interact Text</label>
+      </div>
+      <div class="right">
+        <ul class="nav nav-tabs">
+          <li @click="changeTabType('astTree')" class="nav-item">
+            <a :class="{'nav-link': true, 'active': tabType === 'astTree'}" aria-current="page" href="#">Ast Tree</a>
+          </li>
+          <li @click="changeTabType('tokensTable')" class="nav-item">
+            <a :class="{'nav-link': true, 'active': tabType !== 'astTree'}" href="#">Tokens Table</a>
+          </li>
+          </li>
+        </ul>
+
+        <!--token table-->
+        <div class="tokens-table">
+
+        </div>
+        <!--ast tree-->
+        <!-- <div class="ast-viz">
+
+        </div> -->
+      </div>
+    </div>
+  </div>
 </body>
+<script src="./bootstrap.bundle.min.js"></script>
+<script src="./petite-vue.js"></script>
+<script src="./main.js"></script>
 </html>

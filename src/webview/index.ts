@@ -65,33 +65,43 @@ class InteractPanel {
 
 	private _getHtmlForWebview() {
     const webview = this._panel.webview;
-
-		// Use a nonce to only allow specific scripts to be run
-		const nonce = getNonce();
-
-    webview.html = this.getHtmlContentFromDisk();
+		const resourceMap = this.getWebViewSource(webview);
+    webview.html = this.getHtmlContentFromDisk(resourceMap);
 	}
 
+	/**
+	 * get the local resource map for webview
+	 * @param webview 
+	 */
   private getWebViewSource(webview: vscode.Webview) {
+		const resultMap = new Map<string, vscode.Uri>();
+
 		// Local path to main script run in the webview
-		const scriptPathOnDisk = vscode.Uri.joinPath(this._extensionUri, 'media', 'main.js');
-
 		// And the uri we use to load this script in the webview
-		const scriptUri = webview.asWebviewUri(scriptPathOnDisk);
 
-		// Local path to css styles
-		const styleResetPath = vscode.Uri.joinPath(this._extensionUri, 'media', 'reset.css');
-		const stylesPathMainPath = vscode.Uri.joinPath(this._extensionUri, 'media', 'vscode.css');
+		// css
+		this.setWebUri(resultMap, 'bootstrap.min.css');
+		this.setWebUri(resultMap, 'interact.css');
+		
+		// js
+		this.setWebUri(resultMap, 'bootstrap.bundle.min.js');
+		this.setWebUri(resultMap, 'petite-vue.js');
+		this.setWebUri(resultMap, 'main.js');
 
-		// Uri to load styles into webview
-		const stylesResetUri = webview.asWebviewUri(styleResetPath);
-		const stylesMainUri = webview.asWebviewUri(stylesPathMainPath);
+		return resultMap;
   }
 
-  private getHtmlContentFromDisk() {
+	private setWebUri(map: Map<string, vscode.Uri>, fileName: string) {
+		const webview = this._panel.webview;
+		const uri = vscode.Uri.joinPath(this._extensionUri, 'media', fileName);
+		map.set(fileName, webview.asWebviewUri(uri));
+	}
+
+  private getHtmlContentFromDisk(resourceMap: Map<string, vscode.Uri>) {
     const htmlPath = path.join(this.exctx.extensionPath, 'media', 'interact.html');
-    const html = readFileSync(htmlPath);
-    return html.toString('utf-8');
+    const html = readFileSync(htmlPath).toString('utf-8');
+		const htmlWithResouce = injectResouceToHtml(resourceMap, html);
+    return htmlWithResouce;
   }
 
 	public dispose() {
@@ -118,13 +128,11 @@ function getWebviewOptions(extensionUri: vscode.Uri): vscode.WebviewOptions {
 		localResourceRoots: [vscode.Uri.joinPath(extensionUri, 'media')]
 	};
 }
-
-
-function getNonce() {
-	let text = '';
-	const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-	for (let i = 0; i < 32; i++) {
-		text += possible.charAt(Math.floor(Math.random() * possible.length));
-	}
-	return text;
+function injectResouceToHtml(resourceMap: Map<string, vscode.Uri>, html: string) {
+	let injectedHtml = html.slice();
+	resourceMap.forEach((value, key) => {
+		injectedHtml = injectedHtml.replace(`%${key}%`, value.toString());
+	});
+	return injectedHtml;
 }
+
