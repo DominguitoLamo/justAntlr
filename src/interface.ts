@@ -3,3 +3,10 @@ export interface TerminalInfo {
   args: string[],
   cwd?: string
 }
+
+export interface ParserInfo {
+  g4File: string,
+  fileParsed: string,
+  rule: string,
+  parseType: 'tokens' | 'gui' | 'tree'
+}

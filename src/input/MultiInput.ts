@@ -14,7 +14,7 @@ enum InputFlowAction {
 /**
  * step function interface
  */
-export type InputStep<T extends unknown> = (input: MultiStepInput<T>, result: T) => Promise<void>;
+export type InputStep<T extends unknown> = (input: MultiStepInput<T>, result: T) => Promise<unknown>;
 
 /**
  * wrap the select options parameters

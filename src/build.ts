@@ -1,4 +1,5 @@
 import { posix } from "path";
+import { existsSync } from 'fs';
 import { ExtensionContext } from "vscode";
 import { BuildInfo, buildInput, TargetLang } from "./buildInput";
 import { TerminalInfo } from "./interface";
@@ -16,9 +17,9 @@ export async function build(context: ExtensionContext) {
   }
 }
 
-async function generateAntlrProject(buildInfo: BuildInfo, ctx: ExtensionContext) {
+export async function generateAntlrProject(buildInfo: BuildInfo, ctx: ExtensionContext, cwd?: string) {
   const command = getGenerateCommand(buildInfo, ctx);
-  await launchTerminal(command.command, command.args);
+  await launchTerminal(command.command, command.args, cwd);
 }
 
 function getGenerateCommand(buildInfo: BuildInfo, ctx: ExtensionContext) {
@@ -51,4 +52,21 @@ function getAntlrJarPath(ctx: ExtensionContext) {
 
 function getTargetCommand(lang: string) {
   return `-Dlanguage=${lang}`;
+}
+
+export async function compileBuilt(compilePath: string, context: ExtensionContext) {
+  if (!existsSync(compilePath)) {
+    throw new Error('No compile Path');
+  }
+  const terminalInfo = getCompileCommand(compilePath, context);
+  await launchTerminal(terminalInfo.command, terminalInfo.args);
+}
+
+function getCompileCommand(compilePath: string, context: ExtensionContext) {
+  const result: TerminalInfo = {
+    command: 'javac',
+    args: ['-cp', `.;${getAntlrJarPath(context)}`, compilePath]
+  };
+
+  return result;
 }
