@@ -27,7 +27,7 @@ export function launchTerminal(command: string, args: string[], cwd?: string) {
 
     child.stdout.on('data', (data) => {
       if (data) {
-        outputResult = iconv.decode(data, getTerminalEncoding());
+        outputResult += iconv.decode(data, getTerminalEncoding());
       }
     });
 

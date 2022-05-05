@@ -10,6 +10,7 @@ import { generateAntlrProject, compileBuilt, getAntlrJarPath } from "../build";
 import { launchTerminal } from "../util/terminal";
 import { openInteractWebView } from "../webview";
 import { join } from "path";
+import { parseToken } from "./token";
 
 export async function parse(context: vscode.ExtensionContext) {
   const parseConfig: ParserInfo = {
@@ -31,22 +32,27 @@ export async function parse(context: vscode.ExtensionContext) {
 }
 
 export async function interact(context: vscode.ExtensionContext) {
+  // save the active editor dir
+  const activeTextDir = getActiveEditorDir();
+
   const interactConfig: InteractInfo = {
+    compiledPath: path.join(getGenDir(), getGrammarName(getActiveEditorPath())),
     g4File: getActiveEditorPath(),
     rule: getSelectText() || "",
     grammarName: getGrammarName(getActiveEditorPath()),
     text: '',
     saveText() {
-      const savePath = join(getActiveEditorDir(), '.gen', this.grammarName, 'tmp.txt');
+      const savePath = join(activeTextDir, '.gen', this.grammarName, 'tmp.txt');
       fs.writeFileSync(savePath, this.text);
     },
     async getTokens() {
       const terminalInfo = getTokenCommand(this, context);
       const result = await launchTerminal(terminalInfo.command, terminalInfo.args, terminalInfo.cwd);
-      console.log('tokens:', result);
+      const tokenInfos = parseToken(result);
+      console.log('tokens:', tokenInfos);
     },
     async getAstTree() {
-      const terminalInfo = getTokenCommand(this, context);
+      const terminalInfo = getAstTreeCommand(this, context);
       const result = await launchTerminal(terminalInfo.command, terminalInfo.args, terminalInfo.cwd);
       console.log('ast tree:', result);
     },
@@ -152,26 +158,24 @@ function getTreeCommand(parseConfig: ParserInfo, context: vscode.ExtensionContex
 }
 
 function getTokenCommand(interactInfo: InteractInfo, context: vscode.ExtensionContext) {
-  const parsedFile = path.join(getGenDir(), interactInfo.grammarName, 'tmp.txt');
+  const parsedFile = path.join(interactInfo.compiledPath, 'tmp.txt');
   const result: TerminalInfo = {
     command: 'java',
     args: ['-cp', `.;${getAntlrJarPath(context)}`, 'org.antlr.v4.gui.TestRig', interactInfo.grammarName, interactInfo.rule, '-tokens', parsedFile],
-    cwd: path.join(getGenDir(), interactInfo.grammarName)
+    cwd: path.join(interactInfo.compiledPath)
   };
 
   return result;
 }
 
 function getAstTreeCommand(interactInfo: InteractInfo, context: vscode.ExtensionContext) {
-  const parsedFile = path.join(getGenDir(), interactInfo.grammarName, 'tmp.txt');
+  const parsedFile = path.join(interactInfo.compiledPath, 'tmp.txt');
   const result: TerminalInfo = {
     command: 'java',
     args: ['-cp', `.;${getAntlrJarPath(context)}`, 'org.antlr.v4.gui.TestRig', interactInfo.grammarName, interactInfo.rule, '-tree', parsedFile],
-    cwd: path.join(getGenDir(), interactInfo.grammarName)
+    cwd: path.join(interactInfo.compiledPath)
   };
 
   return result;
 }
-
-
 

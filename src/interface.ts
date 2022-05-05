@@ -12,6 +12,7 @@ export interface ParserInfo {
 }
 
 export interface InteractInfo {
+  compiledPath: string
   g4File: string,
   rule: string,
   text: string,
@@ -20,4 +21,12 @@ export interface InteractInfo {
   getTokens: () => Promise<void>,
   getAstTree: () => Promise<void>,
   getParsedResult: (text: string) => Promise<void>
+}
+
+export interface TokenInfo {
+  type: string,
+  text: string,
+  start: number,
+  end: number,
+  row: number
 }
