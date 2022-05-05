@@ -14,5 +14,10 @@ export interface ParserInfo {
 export interface InteractInfo {
   g4File: string,
   rule: string,
-  text: string
+  text: string,
+  grammarName: string,
+  saveText: () => void,
+  getTokens: () => Promise<void>,
+  getAstTree: () => Promise<void>,
+  getParsedResult: (text: string) => Promise<void>
 }

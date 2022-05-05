@@ -1,9 +1,12 @@
 import * as vscode from 'vscode';
-import { readFileSync } from 'fs';
+import { readFileSync, writeFileSync } from 'fs';
 import * as path from 'path';
+import { join } from 'path';
+import { getActiveEditorDir } from '../util/fs';
+import { InteractInfo } from '../interface';
 
-export function openInteractWebView(extensionUri: vscode.Uri, exctx: vscode.ExtensionContext) {
-  InteractPanel.createOrShow(extensionUri, exctx);
+export function openInteractWebView(extensionUri: vscode.Uri, exctx: vscode.ExtensionContext, interactConfig: InteractInfo) {
+  InteractPanel.createOrShow(extensionUri, exctx, interactConfig);
 }
 
 class InteractPanel {
@@ -11,10 +14,11 @@ class InteractPanel {
 
 	private readonly _panel: vscode.WebviewPanel;
 	private readonly _extensionUri: vscode.Uri;
-  private readonly exctx: vscode.ExtensionContext
+  private readonly exctx: vscode.ExtensionContext;
 	private _disposables: vscode.Disposable[] = [];
+	private readonly interactInfo: InteractInfo;
 
-  public static createOrShow(extensionUri: vscode.Uri, exctx: vscode.ExtensionContext) {
+  public static createOrShow(extensionUri: vscode.Uri, exctx: vscode.ExtensionContext, interactConfig: InteractInfo) {
 		const column = vscode.window.activeTextEditor
 			? vscode.window.activeTextEditor.viewColumn
 			: undefined;
@@ -33,10 +37,11 @@ class InteractPanel {
 			getWebviewOptions(extensionUri),
 		);
 
-		InteractPanel.currentPanel = new InteractPanel(panel, extensionUri, exctx);
+		InteractPanel.currentPanel = new InteractPanel(panel, extensionUri, exctx, interactConfig);
 	}
 
-  private constructor(panel: vscode.WebviewPanel, extensionUri: vscode.Uri, exctx: vscode.ExtensionContext) {
+  private constructor(panel: vscode.WebviewPanel, extensionUri: vscode.Uri, exctx: vscode.ExtensionContext, interactConfig: InteractInfo) {
+		this.interactInfo = interactConfig;
 		this._panel = panel;
 		this._extensionUri = extensionUri;
     this.exctx = exctx;
@@ -57,7 +62,21 @@ class InteractPanel {
 			null,
 			this._disposables
 		);
+
+		// Handle messages from the webview
+		this._panel.webview.onDidReceiveMessage(
+			async message => {
+				switch (message.command) {
+					case 'parse':
+							await this.interactInfo.getParsedResult(message.text as string);
+						return;
+				}
+			},
+			null,
+			this._disposables
+		);
 	}
+
 
 	private _update() {
     this._getHtmlForWebview();
@@ -65,7 +84,7 @@ class InteractPanel {
 
 	private _getHtmlForWebview() {
     const webview = this._panel.webview;
-		const resourceMap = this.getWebViewSource(webview);
+		const resourceMap = this.getWebViewSource();
     webview.html = this.getHtmlContentFromDisk(resourceMap);
 	}
 
@@ -73,7 +92,7 @@ class InteractPanel {
 	 * get the local resource map for webview
 	 * @param webview 
 	 */
-  private getWebViewSource(webview: vscode.Webview) {
+  private getWebViewSource() {
 		const resultMap = new Map<string, vscode.Uri>();
 
 		// Local path to main script run in the webview
@@ -135,4 +154,3 @@ function injectResouceToHtml(resourceMap: Map<string, vscode.Uri>, html: string)
 	});
 	return injectedHtml;
 }
-
