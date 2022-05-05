@@ -12,7 +12,8 @@
 <body>
   <div class="input-content" id="app">
     <div class="button-row">
-      <button @click="sendText" type="button" class="btn btn-primary">Run</button>
+      <button @click="getTokens" type="button" class="btn btn-primary">Get Tokens</button>
+      <button @click="getAstGui" type="button" style="margin-left:10px;" class="btn btn-success">Get AST Gui</button>
     </div>
     <div class="content">
       <div class="left form-floating">
@@ -21,10 +22,7 @@
       </div>
       <div class="right">
         <ul class="nav nav-tabs">
-          <li @click="changeTabType('astTree')" class="nav-item">
-            <a :class="{'nav-link': true, 'active': tabType === 'astTree'}" aria-current="page" href="#">Ast Tree</a>
-          </li>
-          <li @click="changeTabType('tokensTable')" class="nav-item">
+          <li class="nav-item">
             <a :class="{'nav-link': true, 'active': tabType !== 'astTree'}" href="#">Tokens Table</a>
           </li>
           </li>
@@ -32,12 +30,27 @@
 
         <!--token table-->
         <div class="tokens-table">
-
+          <table v-if="tokens && tokens.length > 0" class="table table-dark table-striped">
+            <thead>
+              <tr>
+                <th scope="col">type</th>
+                <th scope="col">text</th>
+                <th scope="col">start</th>
+                <th scope="col">end</th>
+                <th scope="col">row</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(item, index) in tokens" :key="index">
+                <td>{{ item.type }}</td>
+                <td>{{ item.text }}</td>
+                <td>{{ item.start }}</td>
+                <td>{{ item.end }}</td>
+                <td>{{ item.row }}</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
-        <!--ast tree-->
-        <!-- <div class="ast-viz">
-
-        </div> -->
       </div>
     </div>
   </div>

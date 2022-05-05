@@ -67,8 +67,13 @@ class InteractPanel {
 		this._panel.webview.onDidReceiveMessage(
 			async message => {
 				switch (message.command) {
-					case 'parse':
-							await this.interactInfo.getParsedResult(message.text as string);
+					case 'tokens':
+						const result = await this.interactInfo.getTokens(message.text as string);
+						// Send a message to the webview webview.
+						this._panel.webview.postMessage({ command: 'tokens', data: JSON.stringify(result) });
+						return;
+					case 'ast':
+						await this.interactInfo.getAstTree(message.text as string);
 						return;
 				}
 			},

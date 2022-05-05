@@ -11,6 +11,7 @@ import { launchTerminal } from "../util/terminal";
 import { openInteractWebView } from "../webview";
 import { join } from "path";
 import { parseToken } from "./token";
+import { parseAstTree } from "./astTree";
 
 export async function parse(context: vscode.ExtensionContext) {
   const parseConfig: ParserInfo = {
@@ -45,21 +46,23 @@ export async function interact(context: vscode.ExtensionContext) {
       const savePath = join(activeTextDir, '.gen', this.grammarName, 'tmp.txt');
       fs.writeFileSync(savePath, this.text);
     },
-    async getTokens() {
+    async getTokens(text: string) {
+      this.text = text;
+      this.saveText();
       const terminalInfo = getTokenCommand(this, context);
       const result = await launchTerminal(terminalInfo.command, terminalInfo.args, terminalInfo.cwd);
       const tokenInfos = parseToken(result);
-      console.log('tokens:', tokenInfos);
+      return tokenInfos;
     },
-    async getAstTree() {
-      const terminalInfo = getAstTreeCommand(this, context);
-      const result = await launchTerminal(terminalInfo.command, terminalInfo.args, terminalInfo.cwd);
-      console.log('ast tree:', result);
-    },
-    async getParsedResult(text: string) {
+    async getAstTree(text: string) {
       this.text = text;
       this.saveText();
-      await Promise.all([this.getTokens(), this.getAstTree()]);
+      const terminalInfo = getAstTreeCommand(this, context);
+      try {
+        await launchTerminal(terminalInfo.command, terminalInfo.args, terminalInfo.cwd);
+      } catch (e) {
+        vscode.window.showErrorMessage(e as string);
+      }
     }
   };
 
@@ -172,7 +175,7 @@ function getAstTreeCommand(interactInfo: InteractInfo, context: vscode.Extension
   const parsedFile = path.join(interactInfo.compiledPath, 'tmp.txt');
   const result: TerminalInfo = {
     command: 'java',
-    args: ['-cp', `.;${getAntlrJarPath(context)}`, 'org.antlr.v4.gui.TestRig', interactInfo.grammarName, interactInfo.rule, '-tree', parsedFile],
+    args: ['-cp', `.;${getAntlrJarPath(context)}`, 'org.antlr.v4.gui.TestRig', interactInfo.grammarName, interactInfo.rule, '-gui', parsedFile],
     cwd: path.join(interactInfo.compiledPath)
   };
 

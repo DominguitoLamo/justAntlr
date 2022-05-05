@@ -18,9 +18,8 @@ export interface InteractInfo {
   text: string,
   grammarName: string,
   saveText: () => void,
-  getTokens: () => Promise<void>,
-  getAstTree: () => Promise<void>,
-  getParsedResult: (text: string) => Promise<void>
+  getTokens: (text: string) => Promise<TokenInfo[]>,
+  getAstTree: (text: string) => Promise<void>,
 }
 
 export interface TokenInfo {
@@ -29,4 +28,12 @@ export interface TokenInfo {
   start: number,
   end: number,
   row: number
+}
+
+export interface AstTreeInfo {
+  text: {
+    name: string,
+    title: string
+  },
+  children?: AstTreeInfo[]
 }
