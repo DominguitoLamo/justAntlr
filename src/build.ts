@@ -1,5 +1,5 @@
 import { join, posix } from "path";
-import { existsSync } from 'fs';
+import { existsSync, readdirSync } from 'fs';
 import { ExtensionContext } from "vscode";
 import { BuildInfo, buildInput, TargetLang } from "./buildInput";
 import { TerminalInfo } from "./interface";
@@ -33,6 +33,7 @@ function getGenerateCommand(buildInfo: BuildInfo, ctx: ExtensionContext) {
   }
 
   result.args.push('-o', buildInfo.projectName, getActiveEditorPath());
+  result.args.push('-visitor');
 
   if (buildInfo.packageName) {
     result.args.push('-package', buildInfo.packageName);
@@ -63,11 +64,26 @@ export async function compileBuilt(compilePath: string, context: ExtensionContex
 }
 
 function getCompileCommand(compilePath: string, context: ExtensionContext, isAllCompile: boolean = true) {
-  let compiled: string = isAllCompile ? join(compilePath, '*.java') : compilePath;
+
   const result: TerminalInfo = {
     command: 'javac',
-    args: ['-cp', `.;${getAntlrJarPath(context)}`, compiled]
+    args: ['-cp', `.;${getAntlrJarPath(context)}`]
   };
+  if (isAllCompile) {
+    const javaFilesPath = getJavaFilesPath(compilePath);
+    result.args.push(...javaFilesPath);
+  } else {
+    result.args.push(compilePath);
+  }
 
   return result;
+}
+
+function getJavaFilesPath(compilePath: string) {
+  const paths = readdirSync(compilePath).filter(item => item.includes('.java'))
+    .map(item => {
+      return join(compilePath, item);
+    });
+
+    return paths;
 }

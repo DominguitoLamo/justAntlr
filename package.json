@@ -16,6 +16,20 @@
   ],
   "main": "./out/extension.js",
   "contributes": {
+    "languages": [
+      {
+          "id": "justAntlr",
+          "aliases": [
+              "ANTLR",
+              "antlr"
+          ],
+          "extensions": [
+              ".g",
+              ".g4"
+          ],
+          "firstLine": "^(lexer|parser)?\\s*grammar\\s*\\w+\\s*;"
+      }
+    ],
     "commands": [
       {
         "command": "justAntlr.build",
@@ -29,7 +43,21 @@
         "command": "justAntlr.inputInteractive",
         "title": "justAntlr: interactive input"
       }
-    ]
+    ],
+    "menus": {
+      "editor/context": [
+        {
+            "when": "resourceLangId == justAntlr",
+            "command": "justAntlr.genAST",
+            "group": "justAntlr@1"
+        },
+        {
+          "when": "resourceLangId == justAntlr",
+          "command": "justAntlr.inputInteractive",
+          "group": "justAntlr@1"
+      }
+      ]
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
