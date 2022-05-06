@@ -59,8 +59,10 @@ export async function compileBuilt(compilePath: string, context: ExtensionContex
   if (!existsSync(compilePath)) {
     throw new Error('No compile Path');
   }
-  const terminalInfo = getCompileCommand(compilePath, context);
-  await launchTerminal(terminalInfo.command, terminalInfo.args);
+  setTimeout(async() => {
+    const terminalInfo = getCompileCommand(compilePath, context);
+    await launchTerminal(terminalInfo.command, terminalInfo.args);
+  }, 1000);
 }
 
 function getCompileCommand(compilePath: string, context: ExtensionContext, isAllCompile: boolean = true) {

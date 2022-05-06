@@ -33,7 +33,7 @@
     "commands": [
       {
         "command": "justAntlr.build",
-        "title": "justAntlr.build"
+        "title": "justAntlr: build"
       },
       {
         "command": "justAntlr.genAST",
@@ -47,12 +47,12 @@
     "menus": {
       "editor/context": [
         {
-            "when": "resourceLangId == justAntlr",
+            "when": "editorHasSelection && resourceLangId == justAntlr",
             "command": "justAntlr.genAST",
             "group": "justAntlr@1"
         },
         {
-          "when": "resourceLangId == justAntlr",
+          "when": "editorHasSelection && resourceLangId == justAntlr",
           "command": "justAntlr.inputInteractive",
           "group": "justAntlr@1"
       }

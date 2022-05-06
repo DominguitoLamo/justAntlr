@@ -1,70 +1,45 @@
-# justAntlr README
+# JustAntlr
 
-This is the README for your extension "justAntlr". After writing up a brief description, we recommend including the following sections.
+*A vscode plugin make antlr easy*
 
-## Features
+## Feature
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+1. generate antlr files with grammar file
 
-For example if there is an image subfolder under your extension project workspace:
+2. make the generation of AST gui tree easy
 
-\!\[feature X\]\(images/feature-x.png\)
+3. interact with grammar
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+## Prerequisite
 
-## Requirements
+The installment of Jdk is necessary. Its version is at least 1.7+.
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+## Usage
 
-## Extension Settings
+### Generate Antlr Files with Grammar File
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
+Open a grammar file, g or g4 file. Enter `ctrl + shift + p`, select `justAntlr: build`. Follow the intruction and input the information, the files are generated automatically.
 
-For example:
+![antlr:build](./img/antlrBuild.gif)
 
-This extension contributes the following settings:
+*The following usage is only available in windows for now*
 
-* `myExtension.enable`: enable/disable this extension
-* `myExtension.thing`: set to `blah` to do something
+### Generation of AST Gui Tree
 
-## Known Issues
+JustAntlr supports the generation of AST gui tree. you just open a grammar file and select a rule. Right click and choose `justAntlr: generate AST gui`.
 
-Calling out known issues can help limit users opening duplicate issues against your extension.
+![antlr:gui](./img/antlrGui.gif)
 
-## Release Notes
+### Interact with Grammar
 
-Users appreciate release notes as you update your extension.
+It is possible to interact with grammar. Open a grammar file and select a rule. Right click `justAntlr: interactive input`. Vscode opens a web view where you can input text and find the result.
 
-### 1.0.0
+![antlr:interact](./img/antlrInteract.gif)
 
-Initial release of ...
+## Issues
 
-### 1.0.1
+Submit the issues if you find any bug or have any suggestion.
 
-Fixed issue #.
+## Contribution
 
-### 1.1.0
-
-Added features X, Y, and Z.
-
------------------------------------------------------------------------------------------------------------
-## Following extension guidelines
-
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
-
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
-
-## Working with Markdown
-
-**Note:** You can author your README using Visual Studio Code.  Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux)
-* Toggle preview (`Shift+CMD+V` on macOS or `Shift+Ctrl+V` on Windows and Linux)
-* Press `Ctrl+Space` (Windows, Linux) or `Cmd+Space` (macOS) to see a list of Markdown snippets
-
-### For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+Fork the repo and submit pull requests.

@@ -1,13 +1,13 @@
 const createApp = PetiteVue.createApp;
 const vscode = acquireVsCodeApi();
 let tokens = [];
+
 // Handle messages sent from the extension to the webview
 window.addEventListener('message', event => {
   const message = event.data; // The json data that the extension sent
   switch (message.command) {
       case 'tokens':
           tokens = JSON.parse(message.data);
-          console.log(tokens);
           break;
   }
 });
@@ -23,9 +23,6 @@ createApp({
     this.tabType = type;
   },
 
-  mounted() {
-    console.log('mounted');
-  },
 
   // get Tokens
   getTokens() {

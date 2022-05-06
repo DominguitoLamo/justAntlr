@@ -11,7 +11,6 @@ import { launchTerminal } from "../util/terminal";
 import { openInteractWebView } from "../webview";
 import { join } from "path";
 import { parseToken } from "./token";
-import { parseAstTree } from "./astTree";
 
 export async function parse(context: vscode.ExtensionContext) {
   const parseConfig: ParserInfo = {
