@@ -26,13 +26,13 @@ Open a grammar file, g or g4 file. Enter `ctrl + shift + p`, select `justAntlr: 
 
 ### Generation of AST Gui Tree
 
-JustAntlr supports the generation of AST gui tree. you just open a grammar file and select a rule. Right click and choose `justAntlr: generate AST gui`.
+JustAntlr supports the generation of AST gui tree. you just open a grammar file and select a rule. Right click and choose `justAntlr: generate AST gui` or  Enter `ctrl + shift + p`, choose `justAntlr: generate AST gui`.
 
 ![antlr:gui](./img/antlrGui.gif)
 
 ### Interact with Grammar
 
-It is possible to interact with grammar. Open a grammar file and select a rule. Right click `justAntlr: interactive input`. Vscode opens a web view where you can input text and find the result.
+It is possible to interact with grammar. Open a grammar file and select a rule. Right click `justAntlr: interactive input` and choose `justAntlr: interactive input`. Vscode opens a web view where you can input text and find the result.
 
 ![antlr:interact](./img/antlrInteract.gif)
 

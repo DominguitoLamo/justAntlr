@@ -1,5 +1,6 @@
 {
   "name": "justAntlr",
+  "publisher": "ChonLam",
   "displayName": "justAntlr",
   "description": "A simple tool for operating antlr",
   "version": "0.0.1",
