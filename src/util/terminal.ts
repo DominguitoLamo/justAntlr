@@ -3,6 +3,7 @@ import { getActiveEditorDir } from './fs';
 import { type } from 'os';
 import * as iconv from 'iconv-lite';
 import { rejects } from 'assert';
+import { log } from "./log";
 
 /**
  * launch a terminal in child process
@@ -10,7 +11,7 @@ import { rejects } from 'assert';
  * @param args 
  * @param cwd 
  */
-export function launchTerminal(command: string, args: string[], cwd?: string) {
+export function launchTerminal(command: string, args: string[], cwd?: string): Promise<string> {
   let finalCwd: string;
   let outputResult: string = '';
 
@@ -21,6 +22,7 @@ export function launchTerminal(command: string, args: string[], cwd?: string) {
   }
 
   return new Promise<string>((resolve, reject) => {
+    log.output(`run command in ${finalCwd}:\n${command} ${args.join(' ')}`);
     const child = spawn(command, args, {
       cwd: finalCwd
     });
@@ -33,11 +35,13 @@ export function launchTerminal(command: string, args: string[], cwd?: string) {
 
     child.on('exit', (code) => {
       console.log('finish launch: ', code);
+      log.output(outputResult);
       resolve(outputResult);
     });
 
     child.stderr.on('data', (data) => {
       const result = iconv.decode(data, getTerminalEncoding());
+      log.output(result);
       reject(result);
     });
   });

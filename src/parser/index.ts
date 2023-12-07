@@ -3,7 +3,7 @@ import { InteractInfo, ParserInfo, TerminalInfo } from '../interface';
 import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
-import { ensureDirSync } from 'fs-extra';
+import { ensureDirSync, emptyDirSync } from 'fs-extra';
 import { getActiveEditorDir, getActiveEditorPath } from "../util/fs";
 import { BuildInfo, TargetLang } from "../buildInput";
 import { generateAntlrProject, compileBuilt, getAntlrJarPath } from "../build";
@@ -11,17 +11,25 @@ import { launchTerminal } from "../util/terminal";
 import { openInteractWebView } from "../webview";
 import { join } from "path";
 import { parseToken } from "./token";
+import { log } from "../util/log";
+import { homedir } from "os";
 
 export async function parse(context: vscode.ExtensionContext) {
+  const { error, text } = getSelectText();
+  if (error) {
+    vscode.window.showErrorMessage(error);
+    return;
+  }
   const parseConfig: ParserInfo = {
     g4File: getActiveEditorPath(),
-    rule: getSelectText() || "",
+    rule: text,
     parseType: 'gui',
     fileParsed: await getFileParsed()
   };
 
   // Empty file parsed
   if (!parseConfig.fileParsed) {
+    vscode.window.showWarningMessage("not selected file");
     return;
   }
   await buildAndCompile(parseConfig, context)
@@ -32,13 +40,18 @@ export async function parse(context: vscode.ExtensionContext) {
 }
 
 export async function interact(context: vscode.ExtensionContext) {
+  const { error, text } = getSelectText();
+  if (error) {
+    vscode.window.showErrorMessage(error);
+    return;
+  }
   // save the active editor dir
   const activeTextDir = getActiveEditorDir();
 
   const interactConfig: InteractInfo = {
     compiledPath: path.join(getGenDir(), getGrammarName(getActiveEditorPath())),
     g4File: getActiveEditorPath(),
-    rule: getSelectText() || "",
+    rule: text,
     grammarName: getGrammarName(getActiveEditorPath()),
     text: '',
     saveText() {
@@ -71,16 +84,22 @@ export async function interact(context: vscode.ExtensionContext) {
     });
 }
 
+let latestUri: vscode.Uri | null = null;
 async function getFileParsed() {
+  let defaultUri = latestUri;
+  if (defaultUri === null && vscode.workspace.workspaceFolders) {
+    defaultUri = vscode.workspace.workspaceFolders[0].uri;
+  }
   const options: vscode.OpenDialogOptions = {
     canSelectMany: false,
     openLabel: 'Open',
-    defaultUri: vscode.workspace.workspaceFolders ? vscode.workspace.workspaceFolders[0].uri : undefined
+    defaultUri: defaultUri!,
   };
 
   const file = await vscode.window.showOpenDialog(options);
   if (file && file.length > 0) {
-    return file[0].fsPath;
+    latestUri = file[0];
+    return latestUri.fsPath;
   } else {
     return "";
   }
@@ -96,7 +115,7 @@ async function buildAndCompile(parseConfig: ParserInfo | InteractInfo, context: 
   if (isCompile(grammarName)) {
     return;
   }
-  await buildForparsing(grammarName, context)
+  await buildForParsing(parseConfig.g4File, grammarName, context)
     .finally(async () => {
       const compilePath = path.join(getGenDir(), grammarName);
       await compileBuilt(compilePath, context);
@@ -120,27 +139,34 @@ function getGrammarName(filePath: string) {
   return splitArr[0];
 }
 function isCompile(grammarName: string) {
+  const config = vscode.workspace.getConfiguration("justAntlr");
+  const useBuildCompileCache = config.get<boolean>("useBuildCompileCache");
   const compile = path.join(getGenDir(), grammarName);
-  return fs.existsSync(compile);
+  if (useBuildCompileCache) {
+    return fs.existsSync(compile);
+  } else {
+    if (fs.existsSync(compile)) {
+      emptyDirSync(compile);
+    }
+    return false;
+  }
 }
 
-async function buildForparsing(grammarName: string, context: vscode.ExtensionContext) {
+async function buildForParsing(grammarFile: string, grammarName: string, context: vscode.ExtensionContext) {
   const buildInfo: BuildInfo = {
     target: TargetLang.JAVA,
     projectName: grammarName
   };
   const genDir = getGenDir();
-  ensureDirSync(
-    genDir
-  );
-  await generateAntlrProject(buildInfo, context, genDir);
+  ensureDirSync(genDir);
+  await generateAntlrProject(grammarFile, buildInfo, context, genDir);
 }
 
 /**
  * get the generated project dir path
  */
 function getGenDir() {
-  return path.join(getActiveEditorDir(), '.gen');
+  return path.join(homedir(), '.gen');
 }
 
 async function showGuiTree(parseConfig: ParserInfo, context: vscode.ExtensionContext) {

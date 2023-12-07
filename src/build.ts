@@ -1,8 +1,8 @@
 import { join, posix } from "path";
 import { existsSync, readdirSync } from 'fs';
-import { ExtensionContext } from "vscode";
+import { ExtensionContext, window } from "vscode";
 import { BuildInfo, buildInput, TargetLang } from "./buildInput";
-import { TerminalInfo } from "./interface";
+import { InteractInfo, ParserInfo, TerminalInfo } from "./interface";
 import { getActiveEditorPath } from "./util/fs";
 import { launchTerminal } from "./util/terminal";
 
@@ -11,18 +11,19 @@ export async function build(context: ExtensionContext) {
   let buildInfo: BuildInfo;
   try {
     buildInfo = await buildInput(context);
-    await generateAntlrProject(buildInfo, context);
+    const grammarFile = getActiveEditorPath();
+    await generateAntlrProject(grammarFile, buildInfo, context);
   } catch (e) {
     console.error(e);
   }
 }
 
-export async function generateAntlrProject(buildInfo: BuildInfo, ctx: ExtensionContext, cwd?: string) {
-  const command = getGenerateCommand(buildInfo, ctx);
+export async function generateAntlrProject(grammarFile: string, buildInfo: BuildInfo, ctx: ExtensionContext, cwd?: string) {
+  const command = getGenerateCommand(grammarFile, buildInfo, ctx);
   await launchTerminal(command.command, command.args, cwd);
 }
 
-function getGenerateCommand(buildInfo: BuildInfo, ctx: ExtensionContext) {
+function getGenerateCommand(grammarFile: string, buildInfo: BuildInfo, ctx: ExtensionContext) {
   const result: TerminalInfo = {
     command: 'java',
     args: ['-jar', getAntlrJarPath(ctx)]
@@ -32,7 +33,9 @@ function getGenerateCommand(buildInfo: BuildInfo, ctx: ExtensionContext) {
     result.args.push(getTargetCommand(buildInfo.target));
   }
 
-  result.args.push('-o', buildInfo.projectName, getActiveEditorPath());
+  // todo: it is possible to get an activated window identifier
+  // const grammarFile = getActiveEditorPath();
+  result.args.push('-o', buildInfo.projectName, grammarFile);
   result.args.push('-visitor');
 
   if (buildInfo.packageName) {
@@ -59,10 +62,8 @@ export async function compileBuilt(compilePath: string, context: ExtensionContex
   if (!existsSync(compilePath)) {
     throw new Error('No compile Path');
   }
-  setTimeout(async() => {
-    const terminalInfo = getCompileCommand(compilePath, context);
-    await launchTerminal(terminalInfo.command, terminalInfo.args);
-  }, 1000);
+  const terminalInfo = getCompileCommand(compilePath, context);
+  await launchTerminal(terminalInfo.command, terminalInfo.args);
 }
 
 function getCompileCommand(compilePath: string, context: ExtensionContext, isAllCompile: boolean = true) {

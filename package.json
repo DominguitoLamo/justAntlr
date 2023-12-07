@@ -3,7 +3,7 @@
   "publisher": "ChonLam",
   "displayName": "justAntlr",
   "description": "A simple tool for operating antlr",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "engines": {
     "vscode": "^1.66.0"
   },
@@ -21,6 +21,15 @@
   ],
   "main": "./out/extension.js",
   "contributes": {
+    "configuration":{
+      "properties": {
+        "justAntlr.useBuildCompileCache":{
+          "type":"boolean",
+          "default":"true",
+          "description": "whether to use compilation to build cache"
+        }
+      }
+    },
     "languages": [
       {
           "id": "justAntlr",
@@ -52,12 +61,12 @@
     "menus": {
       "editor/context": [
         {
-            "when": "editorHasSelection && resourceLangId == justAntlr",
+            "when": "editorHasSelection",
             "command": "justAntlr.genAST",
             "group": "justAntlr@1"
         },
         {
-          "when": "editorHasSelection && resourceLangId == justAntlr",
+          "when": "editorHasSelection",
           "command": "justAntlr.inputInteractive",
           "group": "justAntlr@1"
       }
